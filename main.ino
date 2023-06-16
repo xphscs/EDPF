@@ -16,7 +16,7 @@ double vImag[SAMPLES];
 
 //    Variables para la afinación
 
-const double tunning[6] = {330.0, 252.5, 198.5, 149.5, 112.5, 84.0};    // arreglo con las frecuencias deseadas
+const double tunning[6] = {330.0, 252.5, 199, 149.5, 110.5, 84.0};    // arreglo con las frecuencias deseadas
 short int string = 0;                                                   // cuerda a afinar
 
 
@@ -30,7 +30,7 @@ const short int nPin = 3;
 
 
 const int vol_th = 575;     // volumen al que se empiezan a tomar medidas
-const double tone_th = 0.75;      // error en la frecuencia máxima
+const double tone_th = 0.5;      // error en la frecuencia máxima
 
 short int prev_switch = 0;
 
@@ -57,9 +57,14 @@ void setup() {
 
   // Se seleccionan los pines de entrada
   // para la selección de cuerdas
-  for (short int i = 8; i <= 10; i++)
+  for (short int i = 10; i <= 12; i++)
   {
     pinMode(i, INPUT);
+  }
+
+  for (short int i = 4; i <= 9; i++)
+  {
+    pinMode(i, OUTPUT);
   }
 
 }
@@ -75,7 +80,7 @@ void loop() {
 
       //Serial.println("Seleccionando cuerda");                  
 
-      for (int i = 8; i <= 10; i++)             // en el estado 0, se selecciona la cuerda a afinar
+      for (int i = 10; i <= 12; i++)             // en el estado 0, se selecciona la cuerda a afinar
       {                                         // según el array de frecuencias deseadas y se pasa al estado 1.
         if (digitalRead(i) == HIGH)             // cuando el motor logró afinar la cuerda, se devuelve a este estado.
         {
@@ -91,25 +96,29 @@ void loop() {
 
               switch (i)
               {
-                case 8:
+                case 10:
 
                   if (string != 0){string--;} break;
                 
-                case 9:
+                case 11:
 
                   if (string != 5){string++;} break;
 
-                case 10:
+                case 12:
 
                   state = 1; 
                   Serial.print("Cambio de estado: ");
                   Serial.println(state);
                   Serial.print("Cuerda elegida: ");
                   Serial.println(string);
-                  break;
+
+                  powerOff_lights();
+                  return;
                 
                 default: void;
               }
+
+              
             }
 
             delay(200);
@@ -119,6 +128,8 @@ void loop() {
         {
           prev_switch = 0;
         }
+
+        set_light();
       }
 
       break;
@@ -269,4 +280,30 @@ bool move_string()
 
   // se devuelve false, por consiguiente, el estado global se vuelve 1.
   return 0;
+}
+
+// Prende el led de la cuerda en selección
+void set_light()
+{
+  for (short int i = 0; i < 6; i++)
+  {
+    if (i == (string))
+    {
+      digitalWrite(i + 4, HIGH);
+    }
+    else
+    {
+      digitalWrite(i + 4, LOW);
+    }
+  }
+}
+
+
+// Apaga todos los led (lo hice porque si no mis ojos se quemaban)
+void powerOff_lights()
+{
+  for (short int i =4; i <= 9; i++)
+  {
+    digitalWrite(i, LOW);
+  }
 }
